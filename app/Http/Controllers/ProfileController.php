@@ -41,30 +41,41 @@ class ProfileController extends Controller
 
         $tmpCnic = TemporaryFile::where('folder', $request->cnic)->first();
 
+        if ($tmpCnic) {
 
-        Storage::copy('public/cnic/tmp/' . $tmpCnic->folder . '/' . $tmpCnic->file, 'public/cnicfinal/' . $tmpCnic->folder . '/' . $tmpCnic->file);
-        $realPath = $tmpCnic->folder . '/' . $tmpCnic->file;
-        // Storage::deleteDirectory('/products/tmp/' .$tmp_file->folder);
-        Storage::deleteDirectory(('public/cnic/tmp/') . $tmpCnic->folder);
-        // $image->delete();
-        $request->user()->cnicImage()->create([
-            'path' => $realPath,
-            'type' => 'cnic'
-        ]);
-
-        foreach ($request['images'] as $image) {
-
-            $tmp_file = TemporaryFile::where('folder', $image)->first();
-            Storage::copy('public/images/tmp/' . $tmp_file->folder . '/' . $tmp_file->file, 'public/imagesfinal/' . $tmp_file->folder . '/' . $tmp_file->file);
-            $realPath = $tmp_file->folder . '/' . $tmp_file->file;
+            Storage::copy('public/cnic/tmp/' . $tmpCnic->folder . '/' . $tmpCnic->file, 'public/cnicfinal/' . $tmpCnic->folder . '/' . $tmpCnic->file);
+            $realPath = $tmpCnic->folder . '/' . $tmpCnic->file;
             // Storage::deleteDirectory('/products/tmp/' .$tmp_file->folder);
-            Storage::deleteDirectory(('public/images/tmp/') . $tmp_file->folder);
+            Storage::deleteDirectory(('public/cnic/tmp/') . $tmpCnic->folder);
             // $image->delete();
-            $request->user()->selfImages()->create([
+            $request->user()->cnicImage()->create([
                 'path' => $realPath,
-                'type' => 'self'
+                'type' => 'cnic'
             ]);
+
+            $tmpCnic->delete();
         }
+
+
+        if ($request['images']) {
+            foreach ($request['images'] as $image) {
+
+                $tmp_file = TemporaryFile::where('folder', $image)->first();
+                Storage::copy('public/images/tmp/' . $tmp_file->folder . '/' . $tmp_file->file, 'public/imagesfinal/' . $tmp_file->folder . '/' . $tmp_file->file);
+                $realPath = $tmp_file->folder . '/' . $tmp_file->file;
+                // Storage::deleteDirectory('/products/tmp/' .$tmp_file->folder);
+                Storage::deleteDirectory(('public/images/tmp/') . $tmp_file->folder);
+                // $image->delete();
+                $request->user()->selfImages()->create([
+                    'path' => $realPath,
+                    'type' => 'self'
+                ]);
+
+                $tmp_file->delete();
+            }
+        }
+
+
 
         return Redirect::route('profile.edit')->with('status', 'profile-updated');
     }
@@ -160,6 +171,7 @@ class ProfileController extends Controller
     {
 
         $userDetails = User::with('selfImages', 'cnicImage')->find(Auth::id());
+
 
         return view('dashboard', ['userDetails' => $userDetails]);
     }

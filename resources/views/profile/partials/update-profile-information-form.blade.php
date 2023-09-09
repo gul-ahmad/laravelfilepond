@@ -85,7 +85,16 @@
 
         Array.from(inputElements).forEach(inputElement => {
 
-            const filepond = FilePond.create(inputElement);
+            const filepond = FilePond.create((inputElement), {
+
+                allowImagePreview: true,
+                imagePreviewMinHeight: 200,
+                imagePreviewMaxHeight: 150,
+                acceptedFileTypes: ['image/*'],
+
+
+
+            });
 
 
         })
